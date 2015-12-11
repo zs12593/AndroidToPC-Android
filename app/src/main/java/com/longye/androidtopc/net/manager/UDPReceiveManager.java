@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class UDPReceiveManager extends Thread {
-    private static final int RECEIVE_SIZE = 1024; // 每串数据长度,默认不超过
+    private static final int RECEIVE_SIZE = 512; // 每串数据长度,默认不超过
     public static final int RECEIVE_PORT = 10251;
 
     private Map<ReceiveCallback.ReceiveType, ReceiveCallback> mReceiveCallbacks;
@@ -72,7 +72,6 @@ public class UDPReceiveManager extends Thread {
     public void run() {
         try {
             mSocket = new DatagramSocket(RECEIVE_PORT);
-            mSocket.setBroadcast(true);
             byte[] data = new byte[RECEIVE_SIZE];
             DatagramPacket packet = new DatagramPacket(data, data.length);
             WifiManager manager = (WifiManager) mContext.getSystemService(Context.WIFI_SERVICE);
@@ -93,7 +92,7 @@ public class UDPReceiveManager extends Thread {
                 }
             }
         } catch (java.io.IOException e) {
-            // e.printStackTrace();
+            e.printStackTrace();
         } finally {
             isActive = false;
             if (mSocket != null && !mSocket.isClosed())

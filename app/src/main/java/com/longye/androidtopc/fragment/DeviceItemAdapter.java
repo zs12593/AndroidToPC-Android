@@ -47,6 +47,16 @@ public class DeviceItemAdapter extends BaseAdapter {
         }
     }
 
+    public void removeItem(String ip) {
+        for (DeviceItem item : datas) {
+            if (item.deviceIp.equals(ip)) {
+                datas.remove(item);
+                safeUpdateUI();
+                break;
+            }
+        }
+    }
+
     public void clear() {
         datas.clear();
         safeUpdateUI();

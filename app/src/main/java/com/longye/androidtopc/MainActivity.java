@@ -7,6 +7,7 @@ import android.app.FragmentTransaction;
 import android.os.Bundle;
 
 import com.longye.androidtopc.net.manager.UDPReceiveManager;
+import com.longye.androidtopc.net.manager.UDPSendManager;
 
 public class MainActivity extends Activity {
     public enum FragmentFlag {
@@ -25,15 +26,16 @@ public class MainActivity extends Activity {
 
         FragmentManager fragmentManager = getFragmentManager();
         mDeviceFragment = fragmentManager.findFragmentById(R.id.device_frag);
-        // mControlFragment = fragmentManager.findFragmentById(R.id.control_frag);
-        // showFragment(FragmentFlag.DeviceList);
+        mControlFragment = fragmentManager.findFragmentById(R.id.control_frag);
+        showFragment(FragmentFlag.DeviceList);
     }
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
-
         UDPReceiveManager.release();
+        UDPSendManager.sendOfflineMessage(this);
+
+        super.onDestroy();
     }
 
     public void showFragment(FragmentFlag flag) {

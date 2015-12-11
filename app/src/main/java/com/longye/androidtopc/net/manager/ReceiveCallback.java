@@ -6,7 +6,7 @@ public interface ReceiveCallback {
     void onReceive(Protocol protocol);
 
     enum ReceiveType {
-        Online,
+        Online, Offline, ConnectFeedback
     }
 }
 
