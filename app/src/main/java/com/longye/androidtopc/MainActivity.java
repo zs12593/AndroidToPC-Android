@@ -1,25 +1,54 @@
 package com.longye.androidtopc;
 
-import android.support.v7.app.AppCompatActivity;
+import android.app.Activity;
+import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.ListView;
 
-public class MainActivity extends AppCompatActivity {
+import com.longye.androidtopc.net.manager.UDPReceiveManager;
 
-    private ListView mListView;
+public class MainActivity extends Activity {
+    public enum FragmentFlag {
+        DeviceList, Controller
+    }
+
+    private Fragment mDeviceFragment;
+    private Fragment mControlFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mListView = (ListView) findViewById(R.id.listView);
+        UDPReceiveManager.createInstance(this).startReceiveListen();
+
+        FragmentManager fragmentManager = getFragmentManager();
+        mDeviceFragment = fragmentManager.findFragmentById(R.id.device_frag);
+        // mControlFragment = fragmentManager.findFragmentById(R.id.control_frag);
+        // showFragment(FragmentFlag.DeviceList);
     }
 
-    public void onClick(View v) {
-        if (v.getId() == R.id.refresh) {
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
 
+        UDPReceiveManager.release();
+    }
+
+    public void showFragment(FragmentFlag flag) {
+        FragmentManager fragmentManager = getFragmentManager();
+        FragmentTransaction ft = fragmentManager.beginTransaction();
+
+        if (flag == FragmentFlag.DeviceList) {
+            ft.hide(mControlFragment);
+            ft.show(mDeviceFragment);
+        } else if (flag == FragmentFlag.Controller) {
+            ft.hide(mDeviceFragment);
+            ft.show(mControlFragment);
         }
+
+        ft.commit();
     }
+
 }

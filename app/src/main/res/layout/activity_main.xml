@@ -9,29 +9,17 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.longye.androidtopc.MainActivity">
 
-    <TextView
-        android:id="@+id/text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:text="设备列表"
-        android:textSize="30sp" />
+    <fragment
+        android:id="@+id/device_frag"
+        android:name="com.longye.androidtopc.fragment.DeviceFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
-    <ListView
-        android:id="@+id/listView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/refresh"
-        android:layout_below="@id/text"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true" />
 
-    <Button
-        android:id="@id/refresh"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:onClick="onClick"
-        android:text="刷新" />
+    <fragment
+        android:id="@+id/control_frag"
+        android:name="com.longye.androidtopc.fragment.ControlFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
 </RelativeLayout>
