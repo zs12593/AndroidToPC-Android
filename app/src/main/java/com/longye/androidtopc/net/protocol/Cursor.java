@@ -2,13 +2,12 @@ package com.longye.androidtopc.net.protocol;
 
 
 public class Cursor extends ProtocolParam {
-    public static String CONNECTED_PASSWORD;
 
     private String password;
 
-    public Cursor() {
+    public Cursor(String password) {
         super();
-        password = CONNECTED_PASSWORD;
+        this.password = password;
     }
 
     public String getPassword() {

@@ -5,6 +5,7 @@ import android.os.Build;
 import android.widget.Toast;
 
 import com.longye.androidtopc.net.protocol.Connect;
+import com.longye.androidtopc.net.protocol.ConnectFeedback;
 import com.longye.androidtopc.net.protocol.Offline;
 import com.longye.androidtopc.net.protocol.Online;
 import com.longye.androidtopc.net.protocol.Protocol;
@@ -41,6 +42,16 @@ public class UDPSendManager {
             InetAddress host = InetAddress.getByName(ip);
             Protocol p = new Protocol(host, UDPSendManager.SEND_PORT,
                     new Connect(Online.DEVICE_ANDROID, Online.SELF_ONLINE, new Build().MODEL));
+            p.send();
+        } catch (Exception e) {
+            sendFailed(context);
+        }
+    }
+
+    public static void sendConnectFeedback(String ip, Context context) {
+        try {
+            InetAddress host = InetAddress.getByName(ip);
+            Protocol p = new Protocol(host, UDPSendManager.SEND_PORT, new ConnectFeedback());
             p.send();
         } catch (Exception e) {
             sendFailed(context);

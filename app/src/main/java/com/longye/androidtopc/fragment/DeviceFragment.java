@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,7 +17,10 @@ import com.longye.androidtopc.R;
 import com.longye.androidtopc.net.manager.ReceiveCallback;
 import com.longye.androidtopc.net.manager.UDPReceiveManager;
 import com.longye.androidtopc.net.manager.UDPSendManager;
+import com.longye.androidtopc.net.protocol.Connect;
 import com.longye.androidtopc.net.protocol.ConnectFeedback;
+import com.longye.androidtopc.net.protocol.ConnectResponse;
+import com.longye.androidtopc.net.protocol.ConnectedData;
 import com.longye.androidtopc.net.protocol.Cursor;
 import com.longye.androidtopc.net.protocol.Offline;
 import com.longye.androidtopc.net.protocol.Online;
@@ -40,10 +44,13 @@ public class DeviceFragment extends Fragment {
                 }
             } else if (param instanceof Offline) {
                 mAdapter.removeItem(address.getHostAddress());
-            } else if (param instanceof ConnectFeedback) {
-                ConnectFeedback feedback = (ConnectFeedback) protocol.getParam();
-                if (feedback.isAccess()) {
-                    Cursor.CONNECTED_PASSWORD = feedback.getPassword();
+            } else if (param instanceof ConnectResponse) {
+                ConnectResponse response = (ConnectResponse) protocol.getParam();
+                if (response.isAccess()) {
+                    ConnectedData.ip = address.getHostAddress();
+                    ConnectedData.password = response.getPassword();
+                    UDPSendManager.sendConnectFeedback(ConnectedData.ip, DeviceFragment.this.getActivity());
+
                     ((MainActivity) getActivity()).showFragment(MainActivity.FragmentFlag.Controller);
                 }
             }
@@ -61,6 +68,7 @@ public class DeviceFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+        addOrRemoveCallback(true);
         UDPSendManager.sendOnlineMessage(null, DeviceFragment.this.getActivity());
     }
 
@@ -101,14 +109,18 @@ public class DeviceFragment extends Fragment {
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
 
-        if (hidden) {
-            UDPReceiveManager.getInstance().removeReceiveCallback(ReceiveCallback.ReceiveType.Online);
-            UDPReceiveManager.getInstance().removeReceiveCallback(ReceiveCallback.ReceiveType.Offline);
-            UDPReceiveManager.getInstance().removeReceiveCallback(ReceiveCallback.ReceiveType.ConnectFeedback);
-        } else {
+        addOrRemoveCallback(!hidden);
+    }
+
+    private void addOrRemoveCallback(boolean add) {
+        if (add) {
             UDPReceiveManager.getInstance().addReceiveCallback(ReceiveCallback.ReceiveType.Online, mReceive);
             UDPReceiveManager.getInstance().addReceiveCallback(ReceiveCallback.ReceiveType.Offline, mReceive);
-            UDPReceiveManager.getInstance().addReceiveCallback(ReceiveCallback.ReceiveType.ConnectFeedback, mReceive);
+            UDPReceiveManager.getInstance().addReceiveCallback(ReceiveCallback.ReceiveType.ConnectResponse, mReceive);
+        } else {
+            UDPReceiveManager.getInstance().removeReceiveCallback(ReceiveCallback.ReceiveType.Online);
+            UDPReceiveManager.getInstance().removeReceiveCallback(ReceiveCallback.ReceiveType.Offline);
+            UDPReceiveManager.getInstance().removeReceiveCallback(ReceiveCallback.ReceiveType.ConnectResponse);
         }
     }
 }

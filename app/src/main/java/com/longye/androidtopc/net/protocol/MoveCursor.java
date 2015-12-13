@@ -4,6 +4,12 @@ public class MoveCursor extends Cursor {
     private int x;
     private int y;
 
+    public MoveCursor(String password, int x, int y) {
+        super(password);
+        this.x = x;
+        this.y = y;
+    }
+
     public int getX() {
         return x;
     }

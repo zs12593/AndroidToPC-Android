@@ -6,6 +6,11 @@ public class Click extends Cursor {
 
     private int button;//0 左键 1 右键
 
+    public Click(String password, int button) {
+        super(password);
+        this.button = button;
+    }
+
     public int getButton() {
         return button;
     }
