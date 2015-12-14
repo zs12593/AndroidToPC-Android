@@ -1,27 +1,26 @@
 package com.longye.androidtopc.fragment;
 
+import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.Fragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.longye.androidtopc.MainActivity;
 import com.longye.androidtopc.R;
 import com.longye.androidtopc.net.manager.ReceiveCallback;
 import com.longye.androidtopc.net.manager.UDPReceiveManager;
 import com.longye.androidtopc.net.manager.UDPSendManager;
-import com.longye.androidtopc.net.protocol.Connect;
-import com.longye.androidtopc.net.protocol.ConnectFeedback;
 import com.longye.androidtopc.net.protocol.ConnectResponse;
 import com.longye.androidtopc.net.protocol.ConnectedData;
-import com.longye.androidtopc.net.protocol.Cursor;
 import com.longye.androidtopc.net.protocol.Offline;
 import com.longye.androidtopc.net.protocol.Online;
 import com.longye.androidtopc.net.protocol.Protocol;
@@ -30,6 +29,9 @@ import com.longye.androidtopc.net.protocol.ProtocolParam;
 import java.net.InetAddress;
 
 public class DeviceFragment extends Fragment {
+    private Button mRefresh;
+    private Dialog mWaitDialog;
+
     private DeviceItemAdapter mAdapter;
     private ReceiveCallback mReceive = new ReceiveCallback() {
         @Override
@@ -45,13 +47,23 @@ public class DeviceFragment extends Fragment {
             } else if (param instanceof Offline) {
                 mAdapter.removeItem(address.getHostAddress());
             } else if (param instanceof ConnectResponse) {
-                ConnectResponse response = (ConnectResponse) protocol.getParam();
+                if (mWaitDialog != null && mWaitDialog.isShowing())
+                    mWaitDialog.dismiss();
+
+                final ConnectResponse response = (ConnectResponse) protocol.getParam();
                 if (response.isAccess()) {
                     ConnectedData.ip = address.getHostAddress();
                     ConnectedData.password = response.getPassword();
                     UDPSendManager.sendConnectFeedback(ConnectedData.ip, DeviceFragment.this.getActivity());
 
                     ((MainActivity) getActivity()).showFragment(MainActivity.FragmentFlag.Controller);
+                } else {
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getActivity(), response.getMessage(), Toast.LENGTH_LONG).show();
+                        }
+                    });
                 }
             }
         }
@@ -80,8 +92,8 @@ public class DeviceFragment extends Fragment {
         mAdapter = new DeviceItemAdapter(this.getActivity());
         listView.setAdapter(mAdapter);
         listView.setOnItemClickListener(mOnItemClickListener);
-        Button refresh = (Button) view.findViewById(R.id.refresh);
-        refresh.setOnClickListener(new View.OnClickListener() {
+        mRefresh = (Button) view.findViewById(R.id.refresh);
+        mRefresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mAdapter.clear();
@@ -100,9 +112,27 @@ public class DeviceFragment extends Fragment {
         builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                showWaitingDialog();
                 UDPSendManager.sendConnectRequest(item.deviceIp, DeviceFragment.this.getActivity());
             }
         }).setNegativeButton("取消", null).show();
+    }
+
+    private void showWaitingDialog() {
+        Activity act = DeviceFragment.this.getActivity();
+        if (mWaitDialog == null) {
+            mWaitDialog = new Dialog(act);
+            mWaitDialog.setContentView(R.layout.waiting_dialog);
+            mWaitDialog.setTitle("配对中,请等待...");
+            Button cancel = (Button) mWaitDialog.findViewById(R.id.cancel);
+            cancel.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mWaitDialog.dismiss();
+                }
+            });
+        }
+        mWaitDialog.show();
     }
 
     @Override
@@ -110,6 +140,9 @@ public class DeviceFragment extends Fragment {
         super.onHiddenChanged(hidden);
 
         addOrRemoveCallback(!hidden);
+        if (!hidden) {
+            mRefresh.performClick();
+        }
     }
 
     private void addOrRemoveCallback(boolean add) {

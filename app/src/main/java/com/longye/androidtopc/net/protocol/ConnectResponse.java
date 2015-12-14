@@ -26,4 +26,12 @@ public class ConnectResponse extends ProtocolParam {
     public void setPassword(String password) {
         this.password = password;
     }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
 }

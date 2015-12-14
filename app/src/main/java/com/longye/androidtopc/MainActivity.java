@@ -16,6 +16,7 @@ public class MainActivity extends Activity {
 
     private Fragment mDeviceFragment;
     private Fragment mControlFragment;
+    private boolean isDeviceShow;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,6 +28,7 @@ public class MainActivity extends Activity {
         FragmentManager fragmentManager = getFragmentManager();
         mDeviceFragment = fragmentManager.findFragmentById(R.id.device_frag);
         mControlFragment = fragmentManager.findFragmentById(R.id.control_frag);
+        isDeviceShow = false;
         showFragment(FragmentFlag.DeviceList);
     }
 
@@ -43,11 +45,17 @@ public class MainActivity extends Activity {
         FragmentTransaction ft = fragmentManager.beginTransaction();
 
         if (flag == FragmentFlag.DeviceList) {
-            ft.hide(mControlFragment);
-            ft.show(mDeviceFragment);
+            if (!isDeviceShow) {
+                isDeviceShow = true;
+                ft.hide(mControlFragment);
+                ft.show(mDeviceFragment);
+            }
         } else if (flag == FragmentFlag.Controller) {
-            ft.hide(mDeviceFragment);
-            ft.show(mControlFragment);
+            if (isDeviceShow) {
+                isDeviceShow = false;
+                ft.hide(mDeviceFragment);
+                ft.show(mControlFragment);
+            }
         }
 
         ft.commit();
